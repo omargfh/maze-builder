@@ -1,13 +1,107 @@
-body {
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  box-sizing: content-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+#root {
+  background-color: #151515;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.view {
+  width: 90%;
+  height: 85%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+
+.sidebar {
+  width: 18px;
+  height: fit-content;
+}
+
+.sidebar .item {
+  width: 100%;
+  height: 18px;
+  color: white;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar .item:hover {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.sidebar .item img {
+  width: 100%;
+  height: 100%;
+  filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(6deg) brightness(102%) contrast(104%);
+}
+
+.view.full-screen {
+  width: 98%;
+  height: 95%;
+}
+
+.view.full-screen .sidebar {
+  display: none;
+}
+
+.maze-view {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-right: 8px;
+  border: 0.3rem solid #b58d54;
+  border-radius: 0.4rem;
+  background: url("assets/pt.png") fixed;
+  overflow: scroll;
+}
+
+.maze-view.smallw {
+  justify-content: center;
+}
+
+.maze-view.smallh {
+  align-items: center;
+}
+
+.grid-view {
+  display: grid;
+  gap: 0px;
+}
+
+.maze-view.small .grid-view {
+  border: 1px dashed #b58d54;
+}
+
+.grid-view .grid-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.grid-view .grid-row .grid-item {
+  background-size: cover;
+  user-select: none;
+}
+
+.grid-view .grid-row .grid-item.wall {
+  background-image: url('assets/block.png');
+}
+
+.grid-view .grid-row .grid-item.empty {
+  opacity: 0;
+}
+
+.grid-view .grid-row .grid-item.steel {
+  background-image: url('assets/steel.png');
 }
