@@ -1,8 +1,8 @@
 import React from 'react'
 
-const Row = ({columns}) => {
+const Row = ({columns, rowHeight}) => {
     return (
-        <div className='grid-row'>
+        <div className='grid-row' style={{"height": rowHeight}}>
             {columns}
         </div>
     )

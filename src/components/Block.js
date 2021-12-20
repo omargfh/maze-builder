@@ -12,3 +12,5 @@ const Block = ({inheritedType, dimensions, onAction, onDoubleClick }) => {
 }
 
 export default Block
+
+

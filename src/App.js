@@ -4,23 +4,28 @@ import Block from './components/Block'
 import Row from './components/Row'
 import Grid from './components/Grid'
 import MazeView from './components/MazeView';
+import NewMazeDialog from './components/New'
+import Export from './components/Export'
 
 import SideBarItem from './components/SideBarItem';
+import Tools from './components/Tools'
 
 import New from './assets/new-page.png'
 import Checkmark from './assets/checkmark.png'
 import Maximize from './assets/maximize.png'
 import Random from './assets/random.png'
 import Square from './assets/square-measument.png'
+import GridIcon from './assets/grid.png'
+import GridIconHide from './assets/gridhide.png'
 
 
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function App() {
   const [size, setSize] = useState({
-    width: 15,
-    height: 8
+    width: 6,
+    height: 6
   })
 
   const defaultDimensions = 85
@@ -92,16 +97,53 @@ function App() {
 
     // Update flags
     setMazeViewStyle(["maze-view", getMazeViewAuxStyle(fetchedAttrib.flags)].join(" "))
+  }
 
-    // Initialize maze space
+  const reset = () => {
+    populateArea()
     initializeMazeSpace(size.height, size.width)
     populateRandom()
   }
 
+  const crop = (i, j) => {
+    let [x, y] = [maze.length, maze[0] == undefined ? 0 : maze[0].length]
+    if (i < maze.length && j < y) {
+      setMaze(maze.splice(i - 1, maze.length - i).map(
+        (row, i) => row.splice(j - 1, maze[i].length - j))
+      )
+    }
+    else if (i < maze.length ){
+      setMaze(maze.splice(i - 1, maze.length - i))
+    }
+    else if (maze.length > 0 && j < y) {
+      setMaze(maze.map(
+        (row, i) => row.splice(j - 1, maze[i].length - j))
+      )
+    }
+  }
+
+  const expand = (a, b) => {
+    let [x, y] = [maze.length, maze[0] == undefined ? 0 : maze[0].length]
+    let newMaze = []
+    for (let i = 0; i < a; i++) {
+      newMaze[i] = i < x ? [...maze[i]] : []
+      for (let j = 0; j < b; j++) {
+        if(i >= x || j >= y) {
+          newMaze[i][j] = "empty"
+        }
+      }
+    }
+    setMaze(newMaze)
+  }
+
+  useEffect(() => {
+    populateArea()
+  }, [size])
+
   // Populates the maze in the right dimensions
   // only when a new maze is loaded
   useEffect(() => {
-    populateArea()
+    reset()
   }, [])
 
   // Updates the dimensions based on scale
@@ -120,10 +162,25 @@ function App() {
     setMaze(newMaze)
   }
 
+  const emptyAll = (blockState) => {
+    const newMaze = [...maze]
+    for(let i = 0; i < maze.length; i++) {
+      for (let j = 0; j < maze[i].length; j++) {
+         newMaze[i][j] = maze[i][j] == blockState ? "empty" : maze[i][j]
+      }
+    }
+    setMaze(newMaze)
+  }
+
   const updateMaze = (i, j, blockState) => {
     if (maze.length === 0) {
       initializeMazeSpace(size.height, size.width)
     }
+
+    if (['steel steel-a', 'steel steel-b'].includes(blockState)) {
+      emptyAll(blockState)
+    }
+
     setMaze(maze.map((row, a) => 
         i === a ? (row.map((block, b) => b === j ? blockState : block)) : row
       )
@@ -131,45 +188,136 @@ function App() {
   }
 
   const populateRandom = (height = size.height, width = size.width) => {
-    const classes = ["empty", "wall", "steel"]
+    const classes = ["empty", "wall", "steel steel-a", "steel steel-b"]
+    let i = classes.length
     setMaze(maze.map((row) => {
       return (row.map((block) => {
-        return classes[Math.floor(Math.random() * 3)]
+        let c = Math.floor(Math.random() * i)
+        let b = classes[c]
+        if (['steel steel-a', 'steel steel-b'].includes(classes[c])) {
+          classes.splice(c, 1)
+          i--
+        }
+        return b
       })
     )}))
   }
 
   const [gridArray, setGridArray] = useState([])
   const renderMaze = () => {
+
+    if (maze.length < size.height) {
+      console.warn("maze length does not match paramaters. reset.")
+      reset()
+    }
+
     let grid = []
-    for (let i = 0; i < maze.length; i++) {
+    for (let i = 0; i < size.height; i++) {
+
         let row = []
         for (let j = 0; j < size.width; j++) {
-            row.push(<Block key={size.width * i + j} inheritedType={maze[i][j]} dimensions={defaultDimensions * scale} />)
+
+          if (maze[i].length < size.width) {
+            console.warn("maze length does not match paramaters. reset.")
+            reset()
+          }
+
+          row.push(<Block key={size.width * i + j}
+                          inheritedType={maze[i][j]}
+                          dimensions={defaultDimensions * scale}
+                          onAction={() => setBlock(i, j)}
+                          onDoubleClick={() => updateMaze(i, j, "empty")} />)
         }
-        grid.push(<Row key={i} columns={row}/>) 
+
+        grid.push(<Row key={i} columns={row} rowHeight={defaultDimensions * scale}/>) 
     }
+
     setGridArray(grid)
   }
   
   useEffect(() => {
     renderMaze()
-  }, [maze, scale])
-  
+  }, [maze, scale, size])
+
+  // Tool functions
+
+  const [gridGuides, setGridGuides] = useState(true)
+  const [gridGuidesIcon, setGridGuidesIcon] = useState(GridIcon)
+  const [currentTool, setCurrentTool] = useState("wall")
+  const [newWindowStatus, setNewWindowStatus] = useState(false)
+  const [exportDialog, setExportDialog] = useState(false)
+
+
+  const mazeRef = useRef(null)
+
+  const magnify = (factor) => {
+    setScale(scale + factor)
+  }
+
+  const setBlock = (i, j) => {
+    updateMaze(i, j, currentTool)
+  }
+
+  const createNew = (w, h, r, g) => {
+    setSize({width: w, height: h})
+    if (r) populateRandom()
+    if (!r) ["wall", "steel steel-a", "steel steel-b"].forEach(a => emptyAll(a))
+    setGridGuides(g)
+    hideDialog(setNewWindowStatus)
+  }
+
+  const hideDialog = (dialog) => {
+    dialog(false)
+  }
+
+  useEffect(() => {
+    if (gridGuides == true) {
+      setGridGuidesIcon(GridIconHide)
+    }
+    else {
+      setGridGuidesIcon(GridIcon)
+    }
+  }, [gridGuides])
+
+
+  const exportString = (e, w, a, b) => {
+    return maze.map((row) => row.map((block) => {
+        if (block === "wall") return w
+        if (block === "empty") return e 
+        if (block === "steel steel-a") return a
+        if (block === "steel steel-b") return b
+      }
+    ).join('')).join('\n')
+  }
+
   return (
     <>
       <div className='view'>
-        <MazeView style={MazeViewStyle} grid={<Grid rows={gridArray} />}/>
+        <MazeView style={MazeViewStyle}
+                  grid={<Grid rows={gridArray} gridGuides={gridGuides} />}
+                  Tools={Tools}
+                  magnify={() => magnify(0.2)}
+                  demagnify={() => magnify(-0.2)}
+                  setCurrentTool={setCurrentTool} 
+                  currentTool={currentTool}
+                  ref={mazeRef}
+                  />
+
         <div className='sidebar'>
-          <SideBarItem icon={New} onClick={() => {
-            updateMaze(0,0,"steel")
-          }}/>
-          <SideBarItem icon={Square} onClick={() => console.log(maze)}/>
-          <SideBarItem icon={Maximize} onClick={() => setScale(0.5)} />
+          <SideBarItem icon={New}
+                       onClick={() => setNewWindowStatus(true)}/>
+          <SideBarItem icon={Square} onClick={() => {setSize({height: 5, width: 3}); crop(5, 3);}}/>
+          <SideBarItem icon={gridGuidesIcon}
+                       onClick={() => {setGridGuides(!gridGuides)}} />
+          <SideBarItem icon={Maximize} onClick={() => mazeRef.current.openFullscreen() } />
           <SideBarItem icon={Random} onClick={() => populateRandom()}/>
-          <SideBarItem icon={Checkmark} />
+          <SideBarItem icon={Checkmark} onClick={() => setExportDialog(true)} />
         </div>
+
       </div>
+      {newWindowStatus ? <NewMazeDialog w={size.width} h={size.height} createNew={createNew} hide={() => hideDialog(setNewWindowStatus)} /> : (<></>) }
+      {exportDialog ? <Export action={exportString} hide={() => hideDialog(setExportDialog)} /> : (<></>) }
+
     </>
   );
 }

@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+:root {
+  --tool-size: 55px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,6 +17,7 @@
   align-items: center;
   height: 100vh;
   width: 100vw;
+  position: relative;
 }
 
 .view {
@@ -26,7 +33,7 @@
   height: fit-content;
 }
 
-.sidebar .item {
+ .item {
   width: 100%;
   height: 18px;
   color: white;
@@ -34,12 +41,12 @@
   margin-bottom: 0.5rem;
 }
 
-.sidebar .item:hover {
+ .item:hover {
   cursor: pointer;
   opacity: 1;
 }
 
-.sidebar .item img {
+ .item img {
   width: 100%;
   height: 100%;
   filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(6deg) brightness(102%) contrast(104%);
@@ -55,10 +62,11 @@
 }
 
 .maze-view {
+  position: relative;
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start;
   margin-right: 8px;
   border: 0.3rem solid #b58d54;
@@ -78,6 +86,8 @@
 .grid-view {
   display: grid;
   gap: 0px;
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
 
 .maze-view.small .grid-view {
@@ -92,6 +102,10 @@
 .grid-view .grid-row .grid-item {
   background-size: cover;
   user-select: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+  /* transition: 0.2s ease-in-out; */
 }
 
 .grid-view .grid-row .grid-item.wall {
@@ -102,6 +116,284 @@
   opacity: 0;
 }
 
+.grid-view.grid-guides-visible .grid-row .grid-item.empty {
+  box-sizing: border-box;
+  opacity: 0.4;
+  border: 0.01rem dashed #b58d54;
+}
+
 .grid-view .grid-row .grid-item.steel {
   background-image: url('assets/steel.png');
+}
+
+.grid-view .grid-row .grid-item.steel-a {
+  background-image: url('assets/A.png');
+
+}
+
+.grid-view .grid-row .grid-item.steel-b {
+  background-image: url('assets/B.png');
+  
+}
+
+.maze-view .tools {
+  position: fixed;
+  /* max-width: 50%; */
+  bottom: 0; left: -360px;
+  margin: 0.8rem;
+  height: var(--tool-size);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  transition: all 0.4s ease-in-out;
+  width: 500px;
+}
+
+.maze-view .tools:hover {
+  bottom: 0; left: 0;
+}
+
+.maze-view .tools .set.more {
+  transition: all 0.4s ease-in-out;
+}
+
+.maze-view .tools:hover .set.more {
+  opacity: 0;
+}
+
+
+.maze-view .tools .set {
+  background-color: white;
+  box-shadow: 0px 13px 111px 0px rgba(0, 0, 0, 0.29);
+  border-radius: 3rem;
+  margin: 0 0.8rem 0 0;
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.maze-view .tools .set .item {
+  width: var(--tool-size);
+  height: var(--tool-size);
+  border-radius: 50%;
+  cursor: pointer;
+  margin: 0rem;
+  z-index: 2;
+  transform: scale(0.8);
+  opacity: 0.6;
+
+}
+
+.maze-view .tools .set .item:hover {
+  opacity: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 0px 2px rgba(0, 0, 0, 0.075);
+}
+
+.maze-view .tools .set .item.selected {
+  opacity: 1;
+  box-shadow: 0 2px 0px 2px rgba(0, 0, 0, 0.075);
+}
+
+.maze-view .tools .set .item img {
+  width: 100%;
+  height: 100%;
+  display: inline-block;
+  z-index: 3;
+}
+
+.maze-view .tools .set .item.bg {
+  position: relative;
+  background-size: cover;
+  width: var(--tool-size);
+  height: var(--tool-size);
+  transform: scale(0.8);
+}
+
+.maze-view .tools .set .item.bg::before {
+  content: '';
+  display: inline;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  width: 83%;
+  height: 83%;
+  border-radius: 50%;
+  background-color: white;
+  z-index: -1;
+}
+
+.maze-view .tools .set .item.text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--tool-size);
+  height: var(--tool-size);
+}
+
+.maze-view .tools .set .item.bg::after {
+  content: attr(text);
+  font-family: Arial-Black;
+  font-size: 20pt;
+  color: #54575a;
+  transform: translateY(-5%);
+  display: inline-block;
+  z-index: 3;
+}
+
+.maze-view .tools .set .item.bg.plus::after {
+  font-size: 25pt;
+}
+
+.maze-view .tools .set .item.bg.bg-brick {
+  background-image: url('./assets/block.png');
+}
+
+.maze-view .tools .set .item.bg.bg-steel {
+  background-image: url('./assets/steel.png');
+
+}
+
+
+.maze-view .tools .set .item.bg img {
+  transform: scale(0.8);
+  filter: invert(34%) sepia(7%) saturate(336%) hue-rotate(169deg) brightness(88%) contrast(80%);
+}
+
+/* Forms */
+.form-container {
+  width: 70%;
+  max-width: 400px;
+  height: fit-content;
+  padding: 1rem;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  border-radius: 1rem;
+  position: absolute;
+  z-index: 300;
+}
+
+.darken {
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  background-color: rgba(0, 0, 0, 0.527);
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-control {
+  margin: 0.5rem;
+}
+
+.center {
+  display: grid;
+  place-items: center;
+}
+
+.form-control-check {
+  display: flex;
+  align-items: center;
+}
+
+label {
+  font-family: 'Lato', sans-serif;
+  color:rgba(73, 73, 73, 0.884);
+}
+
+label.checkbox {
+  margin-left: 0.3rem;
+}
+
+
+input[type="text"] {
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  box-shadow: inset #abacaf 0 0 0 2px;
+  border: 0;
+  background: rgba(0, 0, 0, 0);
+  appearance: none;
+  position: relative;
+  border-radius: 3px;
+  line-height: 1.4;
+  color: rgb(0, 0, 0);
+  font-weight: 400;
+  transition: all .2s ease;
+}
+
+input[type="text"]:hover {
+  box-shadow: 0 0 0 0 #fff inset, #b58d54 0 0 0 2px;
+}
+
+input[type="text"]:focus {
+    background-color: #fff;
+    border-color: #b58d54;
+    box-shadow: 0 0 0 0 #fff inset, #b58d54 0 0 0 2px;
+}
+
+.btn {
+  cursor: pointer;
+  outline: 0;
+  color: #fff;
+  background-color: #b58d54;
+  border-color: #b58d54;
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  font-size: 16px;
+  border-radius: .25rem;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.btn:hover {
+  color: #fff;
+  background-color: #79521b;
+  border-color: #79521b;
+  cursor: pointer;
+}
+
+.btn-red {
+  background-color: #b55454;
+  border-color: #b55454;
+}
+
+.btn-red:hover {
+  background-color: #8d1e1e;
+  border-color: #8d1e1e;
+}
+
+.form-container.expanded {
+  width: 80%;
+  max-width: 500px;
+}
+
+.form-row.compact .form-control input {
+  width: 80%;
+}
+
+textarea {
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  box-shadow: inset #abacaf 0 0 0 2px;
+  border: 0;
+  background: rgba(0, 0, 0, 0);
+  appearance: none;
+  position: relative;
+  border-radius: 3px;
+  line-height: 1.4;
+  color: rgb(0, 0, 0);
+  font-weight: 400;
+  transition: all .2s ease;
+  width: 100%;
+  height: 20vh;
 }

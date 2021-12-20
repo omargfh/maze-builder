@@ -1,9 +1,11 @@
 import React from 'react'
 
 
-const Grid = ({ rows }) => {
+const Grid = ({ rows, gridGuides }) => {
+    const classes = !gridGuides ? 'grid-view' : 'grid-view grid-guides-visible'
+
     return (
-        <div className='grid-view'>
+        <div className={classes}>
            {rows}
         </div>
     )
