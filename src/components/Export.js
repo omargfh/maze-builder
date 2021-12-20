@@ -19,7 +19,6 @@ const Export = ({action, hide}) => {
         }
         let res = action(empty, wall, a, b)
         setExported(res)
-        console.log(exported)
     }
 
 
@@ -61,10 +60,9 @@ const Export = ({action, hide}) => {
                     <button className='btn btn-red' onClick={() => hide()}>Cancel</button>
                 </div>
             </div>
-            {exported ? (
+            {exported.length > 0 ? (
               <div className='form-control center'>
-                   <textarea>
-                       {exported}
+                   <textarea value={exported}>
                    </textarea>
               </div>
             ) : (<></>)}

@@ -6,6 +6,7 @@ import Grid from './components/Grid'
 import MazeView from './components/MazeView';
 import NewMazeDialog from './components/New'
 import Export from './components/Export'
+import Dimensions from './components/Dimensions';
 
 import SideBarItem from './components/SideBarItem';
 import Tools from './components/Tools'
@@ -35,7 +36,7 @@ function App() {
   const [MazeViewStyle, setMazeViewStyle] = useState(String())
   const [maze, setMaze] = useState([])
 
-  const [globalW, globalH] = [window.innerWidth * 0.9 - 35, window.innerHeight * 0.85]
+  const [globalW, globalH] = [window.innerWidth * 0.9 - 35, window.innerHeight * 0.85 - 16.8]
 
   const getAttrib = (columns, rows, defaultDimensions) => {
     let scale = defaultDimensions
@@ -105,34 +106,25 @@ function App() {
     populateRandom()
   }
 
-  const crop = (i, j) => {
+  const fitDim = (i, j) => {
     let [x, y] = [maze.length, maze[0] == undefined ? 0 : maze[0].length]
-    if (i < maze.length && j < y) {
-      setMaze(maze.splice(i - 1, maze.length - i).map(
-        (row, i) => row.splice(j - 1, maze[i].length - j))
-      )
+    let newMaze = [...maze]
+    while(newMaze.length > i) {
+      newMaze.pop()
     }
-    else if (i < maze.length ){
-      setMaze(maze.splice(i - 1, maze.length - i))
-    }
-    else if (maze.length > 0 && j < y) {
-      setMaze(maze.map(
-        (row, i) => row.splice(j - 1, maze[i].length - j))
-      )
-    }
-  }
-
-  const expand = (a, b) => {
-    let [x, y] = [maze.length, maze[0] == undefined ? 0 : maze[0].length]
-    let newMaze = []
-    for (let i = 0; i < a; i++) {
-      newMaze[i] = i < x ? [...maze[i]] : []
-      for (let j = 0; j < b; j++) {
-        if(i >= x || j >= y) {
-          newMaze[i][j] = "empty"
-        }
+    newMaze.forEach(row => {
+      while(row.length > j) {
+        row.pop()
       }
+    })
+    while(newMaze.length < i) {
+      newMaze.push([])
     }
+    newMaze.forEach(row => {
+      while(row.length < j) {
+        row.push("empty")
+      }
+    })
     setMaze(newMaze)
   }
 
@@ -234,11 +226,6 @@ function App() {
 
     setGridArray(grid)
   }
-  
-  useEffect(() => {
-    renderMaze()
-  }, [maze, scale, size])
-
   // Tool functions
 
   const [gridGuides, setGridGuides] = useState(true)
@@ -246,6 +233,8 @@ function App() {
   const [currentTool, setCurrentTool] = useState("wall")
   const [newWindowStatus, setNewWindowStatus] = useState(false)
   const [exportDialog, setExportDialog] = useState(false)
+  const [dimensionDialog, setDimensionDialog] = useState(false)
+
 
 
   const mazeRef = useRef(null)
@@ -278,6 +267,11 @@ function App() {
       setGridGuidesIcon(GridIcon)
     }
   }, [gridGuides])
+  
+  useEffect(() => {
+    renderMaze()
+  }, [maze, scale, currentTool])
+
 
 
   const exportString = (e, w, a, b) => {
@@ -306,7 +300,7 @@ function App() {
         <div className='sidebar'>
           <SideBarItem icon={New}
                        onClick={() => setNewWindowStatus(true)}/>
-          <SideBarItem icon={Square} onClick={() => {setSize({height: 5, width: 3}); crop(5, 3);}}/>
+          <SideBarItem icon={Square} onClick={() => setDimensionDialog(true)}/>
           <SideBarItem icon={gridGuidesIcon}
                        onClick={() => {setGridGuides(!gridGuides)}} />
           <SideBarItem icon={Maximize} onClick={() => mazeRef.current.openFullscreen() } />
@@ -317,6 +311,7 @@ function App() {
       </div>
       {newWindowStatus ? <NewMazeDialog w={size.width} h={size.height} createNew={createNew} hide={() => hideDialog(setNewWindowStatus)} /> : (<></>) }
       {exportDialog ? <Export action={exportString} hide={() => hideDialog(setExportDialog)} /> : (<></>) }
+      {dimensionDialog ? <Dimensions w={size.width} h={size.height}  setSize={setSize} fitDim={fitDim} hide={() => hideDialog(setDimensionDialog)} /> : (<></>) }
 
     </>
   );
