@@ -235,7 +235,7 @@
 
 .maze-view .tools .set .item.bg::after {
   content: attr(text);
-  font-family: Arial-Black;
+  font-family: 'Arial Black', Gadget, sans-serif;
   font-size: 20pt;
   color: #54575a;
   transform: translateY(-5%);

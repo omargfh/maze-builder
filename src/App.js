@@ -25,8 +25,8 @@ import { useState, useEffect, useRef } from 'react'
 
 function App() {
   const [size, setSize] = useState({
-    width: 6,
-    height: 6
+    width: 20,
+    height: 20
   })
 
   const defaultDimensions = 85
