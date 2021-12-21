@@ -1,25 +1,27 @@
 {
   "files": {
-    "main.css": "/maze-builder/static/css/main.fdb5478f.chunk.css",
-    "main.js": "/maze-builder/static/js/main.b5f4745c.chunk.js",
-    "main.js.map": "/maze-builder/static/js/main.b5f4745c.chunk.js.map",
+    "main.css": "/maze-builder/static/css/main.59414bc6.chunk.css",
+    "main.js": "/maze-builder/static/js/main.57e5003d.chunk.js",
+    "main.js.map": "/maze-builder/static/js/main.57e5003d.chunk.js.map",
     "runtime-main.js": "/maze-builder/static/js/runtime-main.d4bf6f03.js",
     "runtime-main.js.map": "/maze-builder/static/js/runtime-main.d4bf6f03.js.map",
-    "static/js/2.58e3ade5.chunk.js": "/maze-builder/static/js/2.58e3ade5.chunk.js",
-    "static/js/2.58e3ade5.chunk.js.map": "/maze-builder/static/js/2.58e3ade5.chunk.js.map",
+    "static/js/2.1496ed39.chunk.js": "/maze-builder/static/js/2.1496ed39.chunk.js",
+    "static/js/2.1496ed39.chunk.js.map": "/maze-builder/static/js/2.1496ed39.chunk.js.map",
     "static/js/3.77de194a.chunk.js": "/maze-builder/static/js/3.77de194a.chunk.js",
     "static/js/3.77de194a.chunk.js.map": "/maze-builder/static/js/3.77de194a.chunk.js.map",
     "index.html": "/maze-builder/index.html",
-    "static/css/main.fdb5478f.chunk.css.map": "/maze-builder/static/css/main.fdb5478f.chunk.css.map",
-    "static/js/2.58e3ade5.chunk.js.LICENSE.txt": "/maze-builder/static/js/2.58e3ade5.chunk.js.LICENSE.txt",
+    "static/css/main.59414bc6.chunk.css.map": "/maze-builder/static/css/main.59414bc6.chunk.css.map",
+    "static/js/2.1496ed39.chunk.js.LICENSE.txt": "/maze-builder/static/js/2.1496ed39.chunk.js.LICENSE.txt",
     "static/media/index.css": "/maze-builder/static/media/pt.827e4b98.png",
     "static/media/checkmark.93b8c593.png": "/maze-builder/static/media/checkmark.93b8c593.png",
-    "static/media/grid.89aed66b.png": "/maze-builder/static/media/grid.89aed66b.png"
+    "static/media/grid.89aed66b.png": "/maze-builder/static/media/grid.89aed66b.png",
+    "static/media/redo.22eaa790.png": "/maze-builder/static/media/redo.22eaa790.png",
+    "static/media/undo.c3b5775e.png": "/maze-builder/static/media/undo.c3b5775e.png"
   },
   "entrypoints": [
     "static/js/runtime-main.d4bf6f03.js",
-    "static/js/2.58e3ade5.chunk.js",
-    "static/css/main.fdb5478f.chunk.css",
-    "static/js/main.b5f4745c.chunk.js"
+    "static/js/2.1496ed39.chunk.js",
+    "static/css/main.59414bc6.chunk.css",
+    "static/js/main.57e5003d.chunk.js"
   ]
 }
