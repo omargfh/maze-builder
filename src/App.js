@@ -18,6 +18,9 @@ import Random from './assets/random.png'
 import Square from './assets/square-measument.png'
 import GridIcon from './assets/grid.png'
 import GridIconHide from './assets/gridhide.png'
+import Undo from './assets/undo.png'
+import Redo from './assets/redo.png'
+
 
 
 
@@ -35,6 +38,69 @@ function App() {
   const [scale, setScale] = useState(1)
   const [MazeViewStyle, setMazeViewStyle] = useState(String())
   const [maze, setMaze] = useState([])
+  const [mazeHistory, setMazeHistory] = useState([])
+  const [mazeFuture, setMazeFuture] = useState([])
+
+  const historyMaxLength = 50
+  const appendToHistory = (state) => {
+    if (mazeHistory.length >= historyMaxLength) {
+      let newMazeHistory = [...mazeHistory, state]
+      newMazeHistory.shift()
+      setMazeHistory(newMazeHistory)
+    }
+    else {
+      setMazeHistory([...mazeHistory, state])
+    }
+  } 
+
+  const appendCurrentMazeToHistory = () => { appendToHistory(maze) }
+
+  const [canUndo, setCanUndo] = useState(false)
+  useEffect(() => {
+    if (mazeHistory.length === 0) {
+      setCanUndo(false)
+    }
+    else {
+      setCanUndo(true)
+    }
+  }, [mazeHistory])
+
+  const undo = () => {
+    if (canUndo) {
+      setMazeFuture([maze, ...mazeFuture])
+      let newMazeHistory = [...mazeHistory]
+      let newMaze = newMazeHistory.pop()
+      setMaze(newMaze)
+      setMazeHistory(newMazeHistory)
+    }
+  }
+
+  const [canRedo, setCanRedo] = useState(false)
+  useEffect(() => {
+    if (mazeFuture.length === 0) {
+      setCanRedo(false)
+    }
+    else {
+      setCanRedo(true)
+    }
+  }, [mazeFuture])
+
+  const redo = () => {
+    if (canRedo) {
+      setMazeHistory([...mazeHistory, maze])
+      let newMazeFuture = [...mazeFuture]
+      let newMaze = newMazeFuture.shift()
+      setMaze(newMaze)
+      setMazeFuture(newMazeFuture)
+    }
+
+  }
+
+  const clearHistory = () => {
+    setMazeFuture([])
+    setMazeHistory([])
+  }
+
 
   const [globalW, globalH] = [window.innerWidth * 0.9 - 35, window.innerHeight * 0.85 - 16.8]
 
@@ -196,6 +262,7 @@ function App() {
   }
 
   const [gridArray, setGridArray] = useState([])
+  const [isDown, setIsDown] = useState(false)
   const renderMaze = () => {
 
     if (maze.length < size.height) {
@@ -217,8 +284,15 @@ function App() {
           row.push(<Block key={size.width * i + j}
                           inheritedType={maze[i][j]}
                           dimensions={defaultDimensions * scale}
-                          onAction={() => setBlock(i, j)}
-                          onDoubleClick={() => updateMaze(i, j, "empty")} />)
+                          onAction={() => {
+                            setBlock(i, j)
+                            setMazeFuture([])
+                          }}
+                          onDoubleClick={() => updateMaze(i, j, "empty")}
+                          isDown = {isDown}
+                          setIsDown={setIsDown}
+                          appendToHistory={appendCurrentMazeToHistory} 
+                          />)
         }
 
         grid.push(<Row key={i} columns={row} rowHeight={defaultDimensions * scale}/>) 
@@ -270,7 +344,7 @@ function App() {
   
   useEffect(() => {
     renderMaze()
-  }, [maze, scale, currentTool])
+  }, [maze, scale, currentTool, isDown])
 
 
 
@@ -304,14 +378,18 @@ function App() {
           <SideBarItem icon={gridGuidesIcon}
                        onClick={() => {setGridGuides(!gridGuides)}} />
           <SideBarItem icon={Maximize} onClick={() => mazeRef.current.openFullscreen() } />
+          <SideBarItem icon={Undo} onClick={() => undo()} opt={!canUndo ? 'disabled' : ''}/>
+          <SideBarItem icon={Redo} onClick={() => redo()} opt={!canRedo ? 'disabled' : ''}/>
           <SideBarItem icon={Random} onClick={() => populateRandom()}/>
           <SideBarItem icon={Checkmark} onClick={() => setExportDialog(true)} />
+
+
         </div>
 
       </div>
-      {newWindowStatus ? <NewMazeDialog w={size.width} h={size.height} createNew={createNew} hide={() => hideDialog(setNewWindowStatus)} /> : (<></>) }
+      {newWindowStatus ? <NewMazeDialog w={size.width} h={size.height} createNew={createNew} hide={() => hideDialog(setNewWindowStatus)} clearHistory={clearHistory} /> : (<></>) }
       {exportDialog ? <Export action={exportString} hide={() => hideDialog(setExportDialog)} /> : (<></>) }
-      {dimensionDialog ? <Dimensions w={size.width} h={size.height}  setSize={setSize} fitDim={fitDim} hide={() => hideDialog(setDimensionDialog)} /> : (<></>) }
+      {dimensionDialog ? <Dimensions w={size.width} h={size.height}  setSize={setSize} fitDim={fitDim} hide={() => hideDialog(setDimensionDialog)} clearHistory={clearHistory} /> : (<></>) }
 
     </>
   );

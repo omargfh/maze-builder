@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Darken from './Darken'
 
 
-const New = ({w, h, createNew, hide}) => {
+const New = ({w, h, createNew, hide, clearHistory}) => {
 
     const [width, setWidth] = useState(w)
     const [height, setHeight] = useState(h)
@@ -39,6 +39,7 @@ const New = ({w, h, createNew, hide}) => {
         }
     
         createNew(width, height, random, showGrids)
+        clearHistory()
     }
 
 

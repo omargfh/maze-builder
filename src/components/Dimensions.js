@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Darken from './Darken'
 
 
-const Dimensions = ({w, h, setSize, fitDim, hide}) => {
+const Dimensions = ({w, h, setSize, fitDim, hide, clearHistory}) => {
 
     const [width, setWidth] = useState(w)
     const [height, setHeight] = useState(h)
@@ -23,6 +23,7 @@ const Dimensions = ({w, h, setSize, fitDim, hide}) => {
         setSize({height: height, width: width})
         fitDim(height, width)
 
+        clearHistory()
         hide()
     }
 
