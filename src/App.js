@@ -1,16 +1,23 @@
 import './App.css';
 
+// Components
+
+/* Viewport */
 import Block from './components/Block'
 import Row from './components/Row'
 import Grid from './components/Grid'
 import MazeView from './components/MazeView';
+
+/* Other Components */
+import SideBarItem from './components/SideBarItem';
+import Tools from './components/Tools'
+
+// Dialogs
 import NewMazeDialog from './components/New'
 import Export from './components/Export'
 import Dimensions from './components/Dimensions';
 
-import SideBarItem from './components/SideBarItem';
-import Tools from './components/Tools'
-
+// Icons
 import New from './assets/new-page.png'
 import Checkmark from './assets/checkmark.png'
 import Maximize from './assets/maximize.png'
@@ -20,7 +27,6 @@ import GridIcon from './assets/grid.png'
 import GridIconHide from './assets/gridhide.png'
 import Undo from './assets/undo.png'
 import Redo from './assets/redo.png'
-
 
 
 
@@ -194,15 +200,16 @@ function App() {
     setMaze(newMaze)
   }
 
-  useEffect(() => {
-    populateArea()
-  }, [size])
-
   // Populates the maze in the right dimensions
   // only when a new maze is loaded
   useEffect(() => {
     reset()
   }, [])
+
+  useEffect(() => {
+    fitDim(size.height, size.width)
+    populateArea()
+  }, [size])
 
   // Updates the dimensions based on scale
   useEffect (() => {
@@ -230,6 +237,13 @@ function App() {
     setMaze(newMaze)
   }
 
+  const blocks = ["empty", "wall", "steel steel-a", "steel steel-b"]
+  const emptyMaze = () => {
+    blocks.forEach(b => {
+      emptyAll(b)
+    })
+  }
+
   const updateMaze = (i, j, blockState) => {
     if (maze.length === 0) {
       initializeMazeSpace(size.height, size.width)
@@ -245,18 +259,75 @@ function App() {
     )
   }
 
+  const randomObject = [
+    {
+      name: "empty",
+      prob: 0.7,
+      unique: false
+    },
+    {
+      name: "wall",
+      prob: 0.3,
+      unique: false
+    },
+    {
+      name: "steel steel-a",
+      prob: 0.05,
+      unique: true
+    },
+    {
+      name: "steel steel-b",
+      prob: 0.03,
+      unique: true
+    }
+  ]
+  const scewedRandomness = (data) => {
+    // Check sum of probabilities 
+    let sum = 0
+    data.forEach(x => { sum = sum + x.prob })
+
+    // Update probabilities out of 1
+    data.map(x => {x.prob = x.prob / sum})
+    
+    // Set collective probabilities
+    let collProbs = [...data]
+    collProbs.forEach((x, i) => {
+      let p = x.prob
+      if (i > 0) { p = p + collProbs[i - 1] }
+      collProbs[i] = p
+    })
+
+    // Pick a random float between 0 and 1
+    let r = Math.random()
+
+    // Find what value r corresponds to in the data object
+    let index = 0
+    for (let i = 0; i < collProbs.length; i++) {
+      if (r <= collProbs[i]) {
+        index = i
+        break
+      }
+      index = NaN
+    }
+
+    // Find the corresponding value and store it
+    let selected = data[index]
+
+    // If the value is unique, remove it from reference
+    if (selected.unique == true) {
+      data.splice(index, 1);
+    }
+
+    // Return the randomly-picked value
+    return selected.name
+  }
+
   const populateRandom = (height = size.height, width = size.width) => {
     const classes = ["empty", "wall", "steel steel-a", "steel steel-b"]
     let i = classes.length
     setMaze(maze.map((row) => {
       return (row.map((block) => {
-        let c = Math.floor(Math.random() * i)
-        let b = classes[c]
-        if (['steel steel-a', 'steel steel-b'].includes(classes[c])) {
-          classes.splice(c, 1)
-          i--
-        }
-        return b
+        return (scewedRandomness(randomObject))
       })
     )}))
   }
@@ -380,7 +451,10 @@ function App() {
           <SideBarItem icon={Maximize} onClick={() => mazeRef.current.openFullscreen() } />
           <SideBarItem icon={Undo} onClick={() => undo()} opt={!canUndo ? 'disabled' : ''}/>
           <SideBarItem icon={Redo} onClick={() => redo()} opt={!canRedo ? 'disabled' : ''}/>
-          <SideBarItem icon={Random} onClick={() => populateRandom()}/>
+          <SideBarItem icon={Random} onClick={() => {
+            appendCurrentMazeToHistory()
+            populateRandom()
+          }}/>
           <SideBarItem icon={Checkmark} onClick={() => setExportDialog(true)} />
 
 
