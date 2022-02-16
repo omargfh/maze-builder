@@ -21,7 +21,7 @@ const Dimensions = ({w, h, setSize, fitDim, hide, clearHistory}) => {
         }
     
         setSize({height: height, width: width})
-        fitDim(height, width)
+
 
         clearHistory()
         hide()
@@ -32,7 +32,7 @@ const Dimensions = ({w, h, setSize, fitDim, hide, clearHistory}) => {
         <>
         <Darken />
         <form className='form-container' onSubmit={onSubmit} >
-            <div class='form-row'>
+            <div className='form-row'>
                 <div className='form-control'>
                     <label>Width</label>
                     <input type='text'

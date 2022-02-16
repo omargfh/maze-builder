@@ -47,7 +47,7 @@ const New = ({w, h, createNew, hide, clearHistory}) => {
         <>
         <Darken />
         <form className='form-container' onSubmit={onSubmit} >
-            <div class='form-row'>
+            <div className='form-row'>
                 <div className='form-control'>
                     <label>Width</label>
                     <input type='text'

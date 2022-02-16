@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 const Block = ({inheritedType, dimensions, onAction, onDoubleClick, isDown, setIsDown, appendToHistory }) => {
 
     return (

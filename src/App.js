@@ -16,6 +16,7 @@ import Tools from './components/Tools'
 import NewMazeDialog from './components/New'
 import Export from './components/Export'
 import Dimensions from './components/Dimensions';
+import Filename from './components/Filename';
 
 // Icons
 import New from './assets/new-page.png'
@@ -27,6 +28,12 @@ import GridIcon from './assets/grid.png'
 import GridIconHide from './assets/gridhide.png'
 import Undo from './assets/undo.png'
 import Redo from './assets/redo.png'
+import Save from './assets/save.png'
+import Open from './assets/open.png'
+
+// Modifiers
+import scewedRandomness from './Modifiers/randomness'
+import save from './Modifiers/save'
 
 
 
@@ -179,7 +186,7 @@ function App() {
   }
 
   const fitDim = (i, j) => {
-    let [x, y] = [maze.length, maze[0] == undefined ? 0 : maze[0].length]
+    populateArea()
     let newMaze = [...maze]
     while(newMaze.length > i) {
       newMaze.pop()
@@ -200,22 +207,6 @@ function App() {
     setMaze(newMaze)
   }
 
-  // Populates the maze in the right dimensions
-  // only when a new maze is loaded
-  useEffect(() => {
-    reset()
-  }, [])
-
-  useEffect(() => {
-    fitDim(size.height, size.width)
-    populateArea()
-  }, [size])
-
-  // Updates the dimensions based on scale
-  useEffect (() => {
-    setDimensions(defaultDimensions * scale)
-  }, [scale])
-
   const initializeMazeSpace = (rows, columns) => {
     let newMaze = maze
     for (let i = 0; i < rows; i++) {
@@ -231,7 +222,7 @@ function App() {
     const newMaze = [...maze]
     for(let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
-         newMaze[i][j] = maze[i][j] == blockState ? "empty" : maze[i][j]
+         newMaze[i][j] = maze[i][j] === blockState ? "empty" : maze[i][j]
       }
     }
     setMaze(newMaze)
@@ -281,50 +272,8 @@ function App() {
       unique: true
     }
   ]
-  const scewedRandomness = (data) => {
-    // Check sum of probabilities 
-    let sum = 0
-    data.forEach(x => { sum = sum + x.prob })
-
-    // Update probabilities out of 1
-    data.map(x => {x.prob = x.prob / sum})
-    
-    // Set collective probabilities
-    let collProbs = [...data]
-    collProbs.forEach((x, i) => {
-      let p = x.prob
-      if (i > 0) { p = p + collProbs[i - 1] }
-      collProbs[i] = p
-    })
-
-    // Pick a random float between 0 and 1
-    let r = Math.random()
-
-    // Find what value r corresponds to in the data object
-    let index = 0
-    for (let i = 0; i < collProbs.length; i++) {
-      if (r <= collProbs[i]) {
-        index = i
-        break
-      }
-      index = NaN
-    }
-
-    // Find the corresponding value and store it
-    let selected = data[index]
-
-    // If the value is unique, remove it from reference
-    if (selected.unique == true) {
-      data.splice(index, 1);
-    }
-
-    // Return the randomly-picked value
-    return selected.name
-  }
 
   const populateRandom = (height = size.height, width = size.width) => {
-    const classes = ["empty", "wall", "steel steel-a", "steel steel-b"]
-    let i = classes.length
     setMaze(maze.map((row) => {
       return (row.map((block) => {
         return (scewedRandomness(randomObject))
@@ -336,38 +285,25 @@ function App() {
   const [isDown, setIsDown] = useState(false)
   const renderMaze = () => {
 
-    if (maze.length < size.height) {
-      console.warn("maze length does not match paramaters. reset.")
-      reset()
-    }
-
     let grid = []
-    for (let i = 0; i < size.height; i++) {
-
-        let row = []
-        for (let j = 0; j < size.width; j++) {
-
-          if (maze[i].length < size.width) {
-            console.warn("maze length does not match paramaters. reset.")
-            reset()
-          }
-
-          row.push(<Block key={size.width * i + j}
-                          inheritedType={maze[i][j]}
-                          dimensions={defaultDimensions * scale}
-                          onAction={() => {
-                            setBlock(i, j)
-                            setMazeFuture([])
-                          }}
-                          onDoubleClick={() => updateMaze(i, j, "empty")}
-                          isDown = {isDown}
-                          setIsDown={setIsDown}
-                          appendToHistory={appendCurrentMazeToHistory} 
-                          />)
-        }
-
-        grid.push(<Row key={i} columns={row} rowHeight={defaultDimensions * scale}/>) 
-    }
+    maze.forEach((row, i) => {
+      let renderedRow = []
+      row.forEach((block, j) => {
+        renderedRow.push(<Block key={size.width * i + j}
+          inheritedType={block}
+          dimensions={defaultDimensions * scale}
+          onAction={() => {
+            setBlock(i, j)
+            setMazeFuture([])
+          }}
+          onDoubleClick={() => updateMaze(i, j, "empty")}
+          isDown = {isDown}
+          setIsDown={setIsDown}
+          appendToHistory={appendCurrentMazeToHistory} 
+        />)
+      })
+      grid.push(<Row key={i} columns={renderedRow} rowHeight={defaultDimensions * scale}/>)
+    })
 
     setGridArray(grid)
   }
@@ -379,7 +315,7 @@ function App() {
   const [newWindowStatus, setNewWindowStatus] = useState(false)
   const [exportDialog, setExportDialog] = useState(false)
   const [dimensionDialog, setDimensionDialog] = useState(false)
-
+  const [filenameDialog, setFilenameDialog] = useState(false)
 
 
   const mazeRef = useRef(null)
@@ -393,7 +329,7 @@ function App() {
   }
 
   const createNew = (w, h, r, g) => {
-    setSize({width: w, height: h})
+    setSize({height: h, width: w})
     if (r) populateRandom()
     if (!r) ["wall", "steel steel-a", "steel steel-b"].forEach(a => emptyAll(a))
     setGridGuides(g)
@@ -404,8 +340,29 @@ function App() {
     dialog(false)
   }
 
+  // Populates the maze in the right dimensions
+  // only when a new maze is loaded
   useEffect(() => {
-    if (gridGuides == true) {
+    reset()
+  }, [])
+
+
+  let populateTrue = true
+  useEffect(() => {
+    fitDim(size.height, size.width)
+    if (populateTrue) {
+      populateArea()
+    }
+    else populateTrue = true
+  }, [size])
+
+  // Updates the dimensions based on scale
+  useEffect (() => {
+    setDimensions(defaultDimensions * scale)
+  }, [scale])
+
+  useEffect(() => {
+    if (gridGuides === true) {
       setGridGuidesIcon(GridIconHide)
     }
     else {
@@ -429,6 +386,25 @@ function App() {
     ).join('')).join('\n')
   }
 
+  const parseUploaded = (e) => {
+    e.preventDefault()
+    if (!e.target.files.length) {
+      console.error("No files uploaded")
+      return 0
+    }
+    const reader = new FileReader()
+    reader.onload = event => {
+      const parsed = JSON.parse(reader.result)
+      populateTrue = false
+
+      setMaze(parsed.maze)
+      setScale(parsed.scale)
+    }
+    reader.readAsText(e.target.files[0])
+  }
+
+  const UploadFile = useRef(null)
+
   return (
     <>
       <div className='view'>
@@ -443,11 +419,11 @@ function App() {
                   />
 
         <div className='sidebar'>
-          <SideBarItem icon={New}
-                       onClick={() => setNewWindowStatus(true)}/>
+          <SideBarItem icon={New} onClick={() => setNewWindowStatus(true)}/>
+          <SideBarItem icon={Open} onClick={() => { UploadFile.current.click() }}/>
           <SideBarItem icon={Square} onClick={() => setDimensionDialog(true)}/>
-          <SideBarItem icon={gridGuidesIcon}
-                       onClick={() => {setGridGuides(!gridGuides)}} />
+          <SideBarItem icon={Save} onClick={() => setFilenameDialog(true)  }/>
+          <SideBarItem icon={gridGuidesIcon} onClick={() => {setGridGuides(!gridGuides)}} />
           <SideBarItem icon={Maximize} onClick={() => mazeRef.current.openFullscreen() } />
           <SideBarItem icon={Undo} onClick={() => undo()} opt={!canUndo ? 'disabled' : ''}/>
           <SideBarItem icon={Redo} onClick={() => redo()} opt={!canRedo ? 'disabled' : ''}/>
@@ -461,9 +437,21 @@ function App() {
         </div>
 
       </div>
+      
+      <input type="file"
+             style={{"width": 0, "position": "absolute"}}
+             ref={UploadFile}
+             onChange={(e) => parseUploaded(e) }>
+      </input>
+
       {newWindowStatus ? <NewMazeDialog w={size.width} h={size.height} createNew={createNew} hide={() => hideDialog(setNewWindowStatus)} clearHistory={clearHistory} /> : (<></>) }
+
       {exportDialog ? <Export action={exportString} hide={() => hideDialog(setExportDialog)} /> : (<></>) }
+
       {dimensionDialog ? <Dimensions w={size.width} h={size.height}  setSize={setSize} fitDim={fitDim} hide={() => hideDialog(setDimensionDialog)} clearHistory={clearHistory} /> : (<></>) }
+
+      {filenameDialog ? <Filename hide={() => hideDialog(setFilenameDialog)} action={(filename) => save(maze, size, scale, filename)} /> : (<></>) }
+  
 
     </>
   );
